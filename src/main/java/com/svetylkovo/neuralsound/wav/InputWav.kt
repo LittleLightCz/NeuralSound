@@ -15,11 +15,12 @@ object InputWav {
 
     var samples = DoubleArray(0)
 
-    private var lastDirectorySelected: File? = null
+    private var lastWavFile: File? = null
+    private var lastDirectory: File? = null
 
     fun openAndLoad() {
         FileChooser().apply {
-            initialDirectory = lastDirectorySelected
+            initialDirectory = lastDirectory
         }.showOpenDialog(Stage())?.let {
             val wavFile = WavFile.openWavFile(it)
 
@@ -35,7 +36,14 @@ object InputWav {
                 samples = samples.filterIndexed { index, _ -> index % 2 == 0 }.toDoubleArray()
             }
 
-            lastDirectorySelected = it.parentFile
+            lastWavFile = it
+            lastDirectory = it.parentFile
+        }
+    }
+
+    fun play() {
+        lastWavFile?.let {
+            WavPlayer.play(it)
         }
     }
 

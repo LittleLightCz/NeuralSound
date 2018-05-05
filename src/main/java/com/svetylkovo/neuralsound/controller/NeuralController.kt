@@ -2,6 +2,7 @@ package com.svetylkovo.neuralsound.controller
 
 import com.svetylkovo.neuralsound.network.NeuralNetworkConfig
 import com.svetylkovo.neuralsound.wav.InputWav
+import com.svetylkovo.neuralsound.wav.WavPlayer
 import labbookpage.wav.WavFile
 import org.neuroph.core.data.DataSet
 import org.neuroph.core.data.DataSetRow
@@ -9,9 +10,7 @@ import org.neuroph.nnet.MultiLayerPerceptron
 import org.neuroph.nnet.learning.BackPropagation
 import tornadofx.Controller
 import java.io.File
-import javax.sound.sampled.AudioSystem
 import javax.sound.sampled.Clip
-import javax.sound.sampled.DataLine
 
 
 class NeuralController : Controller() {
@@ -99,14 +98,12 @@ class NeuralController : Controller() {
     fun play() = runAsync {
 
         if (lastWavClip == null) {
-            val stream = AudioSystem.getAudioInputStream(File(outputFileName))
-            val info = DataLine.Info(Clip::class.java, stream.format)
-            lastWavClip = AudioSystem.getLine(info) as Clip
-            lastWavClip?.open(stream)
+            lastWavClip = WavPlayer.getClip(File(outputFileName))
         }
 
-        lastWavClip?.framePosition = 0
-        lastWavClip?.start()
+        lastWavClip?.let {
+            WavPlayer.play(it)
+        }
     }
 }
 
