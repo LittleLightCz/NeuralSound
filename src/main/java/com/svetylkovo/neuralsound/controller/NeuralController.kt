@@ -1,7 +1,7 @@
 package com.svetylkovo.neuralsound.controller
 
-import com.svetylkovo.neuralsound.wav.WavFile
 import javafx.collections.ObservableList
+import labbookpage.wav.WavFile
 import org.neuroph.core.data.DataSet
 import org.neuroph.core.data.DataSetRow
 import org.neuroph.nnet.MultiLayerPerceptron

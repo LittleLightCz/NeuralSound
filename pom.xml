@@ -35,6 +35,11 @@
             <version>2.92</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.cogchar</groupId>
+            <artifactId>org.cogchar.lib.sonograph</artifactId>
+            <version>1.1.4</version>
+        </dependency>
 
     </dependencies>
 
