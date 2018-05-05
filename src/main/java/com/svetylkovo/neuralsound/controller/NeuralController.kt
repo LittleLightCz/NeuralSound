@@ -1,6 +1,7 @@
 package com.svetylkovo.neuralsound.controller
 
-import javafx.collections.ObservableList
+import com.svetylkovo.neuralsound.network.NeuralNetworkConfig
+import com.svetylkovo.neuralsound.wav.InputWav
 import labbookpage.wav.WavFile
 import org.neuroph.core.data.DataSet
 import org.neuroph.core.data.DataSetRow
@@ -11,54 +12,51 @@ import java.io.File
 import javax.sound.sampled.AudioSystem
 import javax.sound.sampled.Clip
 import javax.sound.sampled.DataLine
-import kotlin.math.sin
 
 
 class NeuralController : Controller() {
 
-    val sampleRate = 8000L
-
-    val inputSamplesCount = 8000
-
-    val inputSize = 100
-    val hiddenSize = 2 * inputSize + 1
-    val outputSize = 1
-
-    val predictedOutputSamplesCount = 16000
+    val predictedOutputSamplesCount = 22000
 
     var neuralNetwork: MultiLayerPerceptron? = null
 
     val outputFileName = "out.wav"
     var lastWavClip: Clip? = null
 
-    fun learn(input: List<Double>) = runAsync {
+    fun learn() = runAsync {
 
-        neuralNetwork = MultiLayerPerceptron(inputSize, hiddenSize, outputSize).apply {
+        neuralNetwork = with(NeuralNetworkConfig) {
 
-            println("Preparing learning dataset ...")
+            MultiLayerPerceptron(inputLayerSize, hiddenLayerSize, outputLayerSize).apply {
 
-            val samplesToLearnCount = 100
+                println("Preparing learning dataset ...")
 
-            val dataSet = DataSet(inputSize, outputSize)
+                val samplesToLearnCount = 1000
+                val inputSize = inputLayerSize
+                val outputSize = outputLayerSize
 
-            input.asSequence()
-                .map { it.toNormalized() }
-                .windowed(inputSize + outputSize, 1)
-                .take(samplesToLearnCount)
-                .forEach {
-                    val dataSetRow = DataSetRow(it.take(inputSize).toDoubleArray(), it.takeLast(1).toDoubleArray())
-                    dataSet.addRow(dataSetRow)
+                val dataSet = DataSet(inputSize, outputSize)
+
+                InputWav.samples
+                    .asSequence()
+                    .map { it.toNormalized() }
+                    .windowed(inputSize + outputSize, 1)
+                    .take(samplesToLearnCount)
+                    .forEach {
+                        val dataSetRow = DataSetRow(it.take(inputSize).toDoubleArray(), it.takeLast(1).toDoubleArray())
+                        dataSet.addRow(dataSetRow)
+                    }
+
+                println("Learning ...")
+
+                val backPropagation = BackPropagation().apply {
+                    maxIterations = 1000
                 }
 
-            println("Learning ...")
+                learn(dataSet, backPropagation)
 
-            val backPropagation = BackPropagation().apply {
-                maxIterations = 1000
+                println("Learning done!")
             }
-
-            learn(dataSet, backPropagation)
-
-            println("Learning done!")
         }
 
         lastWavClip?.close()
@@ -70,6 +68,7 @@ class NeuralController : Controller() {
         neuralNetwork?.run {
 
             val result = arrayListOf<Double>()
+            val inputSize = NeuralNetworkConfig.inputLayerSize
 
             repeat(predictedOutputSamplesCount) {
                 val neuralInput = if (result.size < inputSize) {
@@ -81,26 +80,20 @@ class NeuralController : Controller() {
                 result += getOutput().toList()
             }
 
-            val normalizedResult = result.map { it.fromNormalized() }
-            saveToWav(normalizedResult)
+            val wavResult = result.map { it.fromNormalized() }
+            saveToWav(wavResult)
             result
         } ?: emptyList<Double>()
     }
 
     fun saveToWav(output: List<Double>) {
-
-        WavFile.newWavFile(File(outputFileName),1, output.size.toLong(), 16, sampleRate).also {
-            it.writeFrames(output.toDoubleArray(), output.size)
-            it.close()
-            println("Saved to $outputFileName")
+        with(InputWav) {
+            WavFile.newWavFile(File(outputFileName), 1, output.size.toLong(), 16, sampleRate).also {
+                it.writeFrames(output.toDoubleArray(), output.size)
+                it.close()
+                println("Saved to $outputFileName")
+            }
         }
-    }
-
-    fun loadBaseSine(input: ObservableList<Double>) {
-        input.clear()
-        input.addAll(
-            (1..inputSamplesCount).map { sin(it.toDouble() / 1000) }
-        )
     }
 
     fun play() = runAsync {

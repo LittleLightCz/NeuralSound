@@ -4,6 +4,7 @@ import com.svetylkovo.neuralsound.controller.NeuralController
 import com.svetylkovo.neuralsound.exit
 import com.svetylkovo.neuralsound.extensions.fitXAxisTo
 import com.svetylkovo.neuralsound.extensions.useThinLine
+import com.svetylkovo.neuralsound.wav.InputWav
 import javafx.scene.chart.NumberAxis
 import tornadofx.*
 
@@ -11,8 +12,8 @@ class NeuralSoundView : View("Neural Sound") {
 
     val neuralController by inject<NeuralController>()
 
-    val input = mutableListOf<Double>().observable()
-    val output = mutableListOf<Double>().observable()
+    val inputSamples = mutableListOf<Double>().observable()
+    val outputSamples = mutableListOf<Double>().observable()
 
     val downsampledSize = 1000
 
@@ -27,14 +28,22 @@ class NeuralSoundView : View("Neural Sound") {
         hbox {
             spacing = 3.0
 
+            button("Load WAV").action {
+                InputWav.openAndLoad()
+                inputSamples.setAll(InputWav.samples.toList())
+            }
+
             button("Learn and Generate WAV").action {
-                neuralController.learn(input) success {
-                    neuralController.generateWav() ui {
-                        output.setAll(it)
-                    }
+                neuralController.learn() success {
+                    neuralController.generateWav() ui { outputSamples.setAll(it) }
                 }
             }
-            button("Play last WAV result").action {
+
+            button("Re-generate WAV").action {
+                neuralController.generateWav() ui { outputSamples.setAll(it) }
+            }
+
+            button("Play WAV result").action {
                 neuralController.play()
             }
         }
@@ -43,11 +52,11 @@ class NeuralSoundView : View("Neural Sound") {
             animated = false
             createSymbols = false
 
-            input.onChange {
+            inputSamples.onChange {
                 data.clear()
 
                 series("Input") {
-                    input.downsampleTo(downsampledSize)
+                    inputSamples.downsampleTo(downsampledSize)
                         .forEachIndexed { index, value -> data(index, value) }
                 }
 
@@ -60,11 +69,11 @@ class NeuralSoundView : View("Neural Sound") {
             animated = false
             createSymbols = false
 
-            output.onChange {
+            outputSamples.onChange {
                 data.clear()
 
                 series("Output") {
-                    output.downsampleTo(downsampledSize)
+                    outputSamples.downsampleTo(downsampledSize)
                         .forEachIndexed { index, value -> data(index, value) }
                 }
 
@@ -72,12 +81,8 @@ class NeuralSoundView : View("Neural Sound") {
                 fitXAxisTo(downsampledSize.toDouble())
             }
         }
-
     }
 
-    init {
-        neuralController.loadBaseSine(input)
-    }
 }
 
 private fun List<Double>.downsampleTo(targetSize: Int): List<Double> {
