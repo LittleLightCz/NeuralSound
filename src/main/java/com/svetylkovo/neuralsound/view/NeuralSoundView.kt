@@ -1,6 +1,7 @@
 package com.svetylkovo.neuralsound.view
 
 import com.svetylkovo.neuralsound.controller.NeuralController
+import com.svetylkovo.neuralsound.exit
 import javafx.scene.chart.NumberAxis
 import javafx.scene.chart.XYChart
 import tornadofx.*
@@ -15,6 +16,10 @@ class NeuralSoundView : View("Neural Sound") {
     val downsampledSize = 500
 
     override val root = vbox {
+        shortcut("Esc") { exit() }
+
+        paddingAll = 5.0
+
         prefWidth = 600.0
         prefHeight = 600.0
 

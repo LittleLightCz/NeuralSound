@@ -1,13 +1,18 @@
 package com.svetylkovo.neuralsound
 
 import com.svetylkovo.neuralsound.view.NeuralSoundView
+import javafx.application.Platform
 import tornadofx.App
 
-class MainApp : App(NeuralSoundView::class) {
+class NeuralSoundApp : App(NeuralSoundView::class) {
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
-            launch(MainApp::class.java)
+            launch(NeuralSoundApp::class.java)
         }
     }
+}
+fun exit() {
+    Platform.exit()
+    System.exit(0)
 }
