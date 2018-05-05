@@ -4,6 +4,7 @@ import com.svetylkovo.neuralsound.controller.NeuralController
 import com.svetylkovo.neuralsound.exit
 import com.svetylkovo.neuralsound.extensions.fitXAxisTo
 import com.svetylkovo.neuralsound.extensions.useThinLine
+import com.svetylkovo.neuralsound.network.NeuralNetworkConfig
 import com.svetylkovo.neuralsound.wav.InputWav
 import javafx.scene.chart.NumberAxis
 import tornadofx.*
@@ -45,6 +46,40 @@ class NeuralSoundView : View("Neural Sound") {
 
             button("Play WAV Input").action {
                 InputWav.play()
+            }
+        }
+
+        form {
+            fieldset("Neural network parameters:") {
+                flowpane {
+                    hgap = 5.0
+
+                    vbox {
+                        field("Input layer:") {
+                            textfield(NeuralNetworkConfig.inputLayerSizeProp)
+                        }
+                        field("Hidden layer:") {
+                            textfield(NeuralNetworkConfig.hiddenLayerSizeProp)
+                        }
+                        field("Train dataset size:") {
+                            textfield(NeuralNetworkConfig.maxSamplesToLearnProp)
+                        }
+                        field("Output samples:") {
+                            textfield(NeuralNetworkConfig.outputSamplesCountProp)
+                        }
+                    }
+                    vbox {
+                        field("Max learn iterations:") {
+                            textfield(NeuralNetworkConfig.maxLearningIterationsProp)
+                        }
+                        field("Max learn error:") {
+                            textfield(NeuralNetworkConfig.maxLearningErrorProp)
+                        }
+                        field("Learn rate:") {
+                            textfield(NeuralNetworkConfig.learnRateProp)
+                        }
+                    }
+                }
             }
         }
 

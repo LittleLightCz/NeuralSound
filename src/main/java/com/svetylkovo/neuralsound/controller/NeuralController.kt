@@ -15,8 +15,6 @@ import javax.sound.sampled.Clip
 
 class NeuralController : Controller() {
 
-    val predictedOutputSamplesCount = 22000
-
     var neuralNetwork: MultiLayerPerceptron? = null
 
     val outputFileName = "out.wav"
@@ -30,7 +28,6 @@ class NeuralController : Controller() {
 
                 println("Preparing learning dataset ...")
 
-                val samplesToLearnCount = 1000
                 val inputSize = inputLayerSize
                 val outputSize = outputLayerSize
 
@@ -40,7 +37,7 @@ class NeuralController : Controller() {
                     .asSequence()
                     .map { it.toNormalized() }
                     .windowed(inputSize + outputSize, 1)
-                    .take(samplesToLearnCount)
+                    .take(maxSamplesToLearn)
                     .forEach {
                         val dataSetRow = DataSetRow(it.take(inputSize).toDoubleArray(), it.takeLast(1).toDoubleArray())
                         dataSet.addRow(dataSetRow)
@@ -49,12 +46,14 @@ class NeuralController : Controller() {
                 println("Learning ...")
 
                 val backPropagation = BackPropagation().apply {
-                    maxIterations = 1000
+                    maxIterations = maxLearningIterations
+                    maxError = maxLearningError
+                    learningRate = learnRate
                 }
 
                 learn(dataSet, backPropagation)
 
-                println("Learning done!")
+                println("Learning done! Error: ${backPropagation.totalNetworkError}")
             }
         }
 
@@ -64,21 +63,29 @@ class NeuralController : Controller() {
 
     fun generateWav() = runAsync {
 
+        println("Generating WAV")
+
         neuralNetwork?.run {
 
-            val result = arrayListOf<Double>()
+            val result = InputWav.samples.toMutableList()
             val inputSize = NeuralNetworkConfig.inputLayerSize
 
-            repeat(predictedOutputSamplesCount) {
-                val neuralInput = if (result.size < inputSize) {
-                    List(inputSize - result.size) { 0.5 } + result
-                } else result.takeLast(inputSize)
+            repeat(NeuralNetworkConfig.outputSamplesCount) {
+//                val neuralInput = if (result.size < inputSize) {
+//                    List(inputSize - result.size) { 0.5 } + result
+//                } else result.takeLast(inputSize)
 
-                setInput(*neuralInput.toDoubleArray())
+                val neuralInput = result.takeLast(inputSize)
+
+                inputNeurons.forEachIndexed { index, neuron ->
+                    neuron.setInput(neuralInput[index])
+                }
+
                 calculate()
                 result += getOutput().toList()
             }
 
+            println("Mapping to result form ...")
             val wavResult = result.map { it.fromNormalized() }
             saveToWav(wavResult)
             result
@@ -86,8 +93,9 @@ class NeuralController : Controller() {
     }
 
     fun saveToWav(output: List<Double>) {
+        println("Saving to wav file ...")
         with(InputWav) {
-            WavFile.newWavFile(File(outputFileName), 1, output.size.toLong(), 16, sampleRate).also {
+            WavFile.newWavFile(File(outputFileName), 1, output.size.toLong(), 32, sampleRate).also {
                 it.writeFrames(output.toDoubleArray(), output.size)
                 it.close()
                 println("Saved to $outputFileName")

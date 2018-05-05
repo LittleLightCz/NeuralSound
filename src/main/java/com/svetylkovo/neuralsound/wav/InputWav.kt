@@ -4,6 +4,7 @@ import javafx.stage.FileChooser
 import javafx.stage.Stage
 import labbookpage.wav.WavFile
 import java.io.File
+import java.nio.file.Paths
 
 
 object InputWav {
@@ -16,12 +17,13 @@ object InputWav {
     var samples = DoubleArray(0)
 
     private var lastWavFile: File? = null
-    private var lastDirectory: File? = null
+    private var lastDirectory = Paths.get("").toAbsolutePath().toFile()
 
     fun openAndLoad() {
         FileChooser().apply {
             initialDirectory = lastDirectory
         }.showOpenDialog(Stage())?.let {
+
             val wavFile = WavFile.openWavFile(it)
 
             numChannels = wavFile.numChannels
