@@ -1,5 +1,6 @@
 package com.svetylkovo.neuralsound.wav
 
+import com.svetylkovo.neuralsound.network.NeuralNetworkConfig
 import javafx.stage.FileChooser
 import javafx.stage.Stage
 import labbookpage.wav.WavFile
@@ -40,6 +41,8 @@ object InputWav {
 
             lastWavFile = it
             lastDirectory = it.parentFile
+
+            NeuralNetworkConfig.setGoodDefaultsFor(samples.size)
         }
     }
 

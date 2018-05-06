@@ -29,16 +29,24 @@
             <artifactId>tornadofx</artifactId>
             <version>1.7.15</version>
         </dependency>
-        <dependency>
-            <groupId>org.beykery</groupId>
-            <artifactId>neuroph</artifactId>
-            <version>2.92</version>
-        </dependency>
 
         <dependency>
             <groupId>org.cogchar</groupId>
             <artifactId>org.cogchar.lib.sonograph</artifactId>
             <version>1.1.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.encog</groupId>
+            <artifactId>encog-core</artifactId>
+            <version>3.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.9.1</version>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>

@@ -69,14 +69,20 @@ class NeuralSoundView : View("Neural Sound") {
                         }
                     }
                     vbox {
-                        field("Max learn iterations:") {
-                            textfield(NeuralNetworkConfig.maxLearningIterationsProp)
+                        field("Window step:") {
+                            textfield(NeuralNetworkConfig.windowStepProp)
+                        }
+                        field("Max epochs:") {
+                            textfield(NeuralNetworkConfig.maxEpochsProp)
                         }
                         field("Max learn error:") {
                             textfield(NeuralNetworkConfig.maxLearningErrorProp)
                         }
                         field("Learn rate:") {
                             textfield(NeuralNetworkConfig.learnRateProp)
+                        }
+                        field("Momentum rate:") {
+                            textfield(NeuralNetworkConfig.momentumRateProp)
                         }
                     }
                 }
@@ -127,8 +133,10 @@ class NeuralSoundView : View("Neural Sound") {
 }
 
 private fun List<Double>.downsampleTo(targetSize: Int): List<Double> {
-    val windowSize = (size / targetSize) * 2
-    return asSequence().windowed(windowSize, windowSize)
-        .flatMap { sequenceOf(it.min(), it.max()).filterNotNull() }
-        .toList()
+    return if (size > targetSize) {
+        val windowSize = (size / targetSize) * 2
+        asSequence().windowed(windowSize, windowSize)
+            .flatMap { sequenceOf(it.min(), it.max()).filterNotNull() }
+            .toList()
+    } else this
 }

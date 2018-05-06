@@ -12,6 +12,7 @@ class NeuralSoundApp : App(NeuralSoundView::class) {
         }
     }
 }
+
 fun exit() {
     Platform.exit()
     System.exit(0)
