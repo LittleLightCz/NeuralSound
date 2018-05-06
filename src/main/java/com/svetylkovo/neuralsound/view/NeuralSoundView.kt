@@ -34,10 +34,17 @@ class NeuralSoundView : View("Neural Sound") {
                 inputSamples.setAll(InputWav.samples.toList())
             }
 
-            button("Learn and Generate WAV").action {
+            button("Learn/Generate/Play").action {
                 neuralController.learn() success {
-                    neuralController.generateWav() ui { outputSamples.setAll(it) }
+                    neuralController.generateWav() ui {
+                        outputSamples.setAll(it)
+                        neuralController.play()
+                    }
                 }
+            }
+
+            button("Play WAV result").action {
+                neuralController.play()
             }
 
             button("Re-generate WAV").action {
@@ -103,12 +110,6 @@ class NeuralSoundView : View("Neural Sound") {
 
                 useThinLine()
                 fitXAxisTo(downsampledSize.toDouble())
-            }
-        }
-
-        hbox {
-            button("Play WAV result").action {
-                neuralController.play()
             }
         }
 

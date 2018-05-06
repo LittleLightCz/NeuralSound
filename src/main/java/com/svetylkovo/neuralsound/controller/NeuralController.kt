@@ -32,6 +32,7 @@ class NeuralController : Controller() {
             BasicNetwork().apply {
                 addLayer(BasicLayer(null, true, inputLayerSize))
                 addLayer(BasicLayer(ActivationSigmoid(), true, hiddenLayerSize))
+                addLayer(BasicLayer(ActivationSigmoid(), true, hiddenLayerSize / 2))
                 addLayer(BasicLayer(ActivationSigmoid(), false, outputLayerSize))
 
                 structure.finalizeStructure()

@@ -11,8 +11,8 @@ object NeuralNetworkConfig {
     val maxEpochsProp = SimpleIntegerProperty(100)
     val maxSamplesToLearnProp = SimpleIntegerProperty(100)
     val maxLearningErrorProp = SimpleDoubleProperty(0.001)
-    val learnRateProp = SimpleDoubleProperty(0.1)
-    val momentumRateProp = SimpleDoubleProperty(0.1)
+    val learnRateProp = SimpleDoubleProperty(0.001)
+    val momentumRateProp = SimpleDoubleProperty(0.001)
     val outputSamplesCountProp = SimpleIntegerProperty(8000)
     val windowStepProp = SimpleIntegerProperty(1)
 
