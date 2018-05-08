@@ -1,5 +1,6 @@
 package com.svetylkovo.neuralsound.network
 
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.property.SimpleIntegerProperty
 import tornadofx.onChange
@@ -8,33 +9,34 @@ import kotlin.math.roundToInt
 object NeuralNetworkConfig {
     val inputLayerSizeProp = SimpleIntegerProperty(0)
     val hiddenLayerSizeProp = SimpleIntegerProperty(0)
-    val maxEpochsProp = SimpleIntegerProperty(100)
-    val maxSamplesToLearnProp = SimpleIntegerProperty(100)
-    val maxLearningErrorProp = SimpleDoubleProperty(0.001)
-    val learnRateProp = SimpleDoubleProperty(0.001)
-    val momentumRateProp = SimpleDoubleProperty(0.001)
-    val outputSamplesCountProp = SimpleIntegerProperty(8000)
-    val windowStepProp = SimpleIntegerProperty(1)
 
+    val maxEpochsProp = SimpleIntegerProperty(100)
+    val maxDataSetSizeProp = SimpleIntegerProperty(100)
+    val maxLearningErrorProp = SimpleDoubleProperty(0.001)
+
+    val maxLearnStepProp = SimpleDoubleProperty(0.001)
+
+    val outputSamplesCountProp = SimpleIntegerProperty(8000)
+
+    val useInputSamplesAsKicker = SimpleBooleanProperty(false)
+
+    //getters
     val inputLayerSize get() = inputLayerSizeProp.get()
     val hiddenLayerSize get() = hiddenLayerSizeProp.get()
-    val outputLayerSize = 1
+    val outputLayerSize get() = inputLayerSize
     val maxEpochs get() = maxEpochsProp.get()
-    val maxSamplesToLearn get() = maxSamplesToLearnProp.get()
+    val maxDataSetSize get() = maxDataSetSizeProp.get()
     val maxLearningError get() = this.maxLearningErrorProp.get()
-    val learnRate get() = this.learnRateProp.get()
-    val momentumRate get() = this.momentumRateProp.get()
+    val maxLearnStep get() = this.maxLearnStepProp.get()
     val outputSamplesCount get() = outputSamplesCountProp.get()
-    val windowStep get() = windowStepProp.get()
 
     init {
         inputLayerSizeProp.onChange { hiddenLayerSizeProp.set(2 * it + 1) }
-        inputLayerSizeProp.set(600)
+        inputLayerSizeProp.set(100)
     }
 
     fun setGoodDefaultsFor(inputSamplesSize: Int) {
-        inputLayerSizeProp.set((inputSamplesSize * 0.75).roundToInt())
-        windowStepProp.set((inputSamplesSize * 0.035).roundToInt())
-        maxSamplesToLearnProp.set((inputSamplesSize- inputLayerSize)/ windowStep)
+        inputLayerSizeProp.set((inputSamplesSize * 0.10).roundToInt())
+        maxDataSetSizeProp.set(500)
     }
 }

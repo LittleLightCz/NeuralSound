@@ -41,20 +41,20 @@ class NeuralController : Controller() {
                 println("Preparing learning dataset ...")
 
                 val inputSize = inputLayerSize
-                val outputSize = outputLayerSize
 
                 val trainingMap = InputWav.samples
                     .asSequence()
                     .map { it.toNormalized() }
-                    .windowed(inputSize + outputSize, windowStep)
-                    .take(maxSamplesToLearn)
+                    .windowed(inputSize, inputSize)
+                    .windowed(2, 1)
+                    .take(maxDataSetSize)
                     .map {
-                        it.take(inputSize).toDoubleArray() to it.takeLast(outputLayerSize).toDoubleArray()
+                        it.first().toDoubleArray() to it.last().toDoubleArray()
                     }.toMap()
 
                 val dataSet = BasicMLDataSet(trainingMap.keys.toTypedArray(), trainingMap.values.toTypedArray())
 
-                val train = ResilientPropagation(this, dataSet, learnRate, momentumRate)
+                val train = ResilientPropagation(this, dataSet, 0.1, maxLearnStep)
 
                 println("Learning ...")
 
@@ -88,20 +88,20 @@ class NeuralController : Controller() {
         neuralNetwork?.run {
 
             val inputSize = NeuralNetworkConfig.inputLayerSize
+            val outputSize = inputSize
 
-            val result = List(inputSize) { 0.5 }.toMutableList()
+            val result = when(NeuralNetworkConfig.useInputSamplesAsKicker.get()) {
+                true -> InputWav.samples.take(inputSize).map { it.toNormalized() }.toMutableList()
+                else -> List(inputSize) { 0.5 }.toMutableList()
+            }
 
-            val singleSampleResult = DoubleArray(1)
+            val neuralResult = DoubleArray(outputSize)
 
-            repeat(NeuralNetworkConfig.outputSamplesCount) {
-//                val neuralInput = if (result.size < inputSize) {
-//                    List(inputSize - result.size) { 0.5 } + result
-//                } else result.takeLast(inputSize)
-
+            repeat(NeuralNetworkConfig.outputSamplesCount / inputSize + 1) {
                 val neuralInput = result.takeLast(inputSize)
 
-                compute(neuralInput.toDoubleArray(), singleSampleResult)
-                result += singleSampleResult[0]
+                compute(neuralInput.toDoubleArray(), neuralResult)
+                result += neuralResult.toList()
             }
 
             println("Mapping to un-normalized form ...")

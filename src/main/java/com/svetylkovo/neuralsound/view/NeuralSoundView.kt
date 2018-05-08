@@ -68,28 +68,22 @@ class NeuralSoundView : View("Neural Sound") {
                         field("Hidden layer:") {
                             textfield(NeuralNetworkConfig.hiddenLayerSizeProp)
                         }
-                        field("Train dataset size:") {
-                            textfield(NeuralNetworkConfig.maxSamplesToLearnProp)
+                        field("Max dataset size:") {
+                            textfield(NeuralNetworkConfig.maxDataSetSizeProp)
                         }
                         field("Output samples:") {
                             textfield(NeuralNetworkConfig.outputSamplesCountProp)
                         }
                     }
                     vbox {
-                        field("Window step:") {
-                            textfield(NeuralNetworkConfig.windowStepProp)
-                        }
                         field("Max epochs:") {
                             textfield(NeuralNetworkConfig.maxEpochsProp)
                         }
                         field("Max learn error:") {
                             textfield(NeuralNetworkConfig.maxLearningErrorProp)
                         }
-                        field("Learn rate:") {
-                            textfield(NeuralNetworkConfig.learnRateProp)
-                        }
-                        field("Momentum rate:") {
-                            textfield(NeuralNetworkConfig.momentumRateProp)
+                        field("Learn step:") {
+                            textfield(NeuralNetworkConfig.maxLearnStepProp)
                         }
                     }
                 }
@@ -129,6 +123,11 @@ class NeuralSoundView : View("Neural Sound") {
                 fitXAxisTo(downsampledSize.toDouble())
             }
         }
+
+        checkbox(
+            "Use input samples as a kicker for the first neural output generation",
+            NeuralNetworkConfig.useInputSamplesAsKicker
+        )
     }
 
 }
