@@ -101,6 +101,7 @@ class NeuralController : Controller() {
                 val neuralInput = result.takeLast(inputSize)
 
                 compute(neuralInput.toDoubleArray(), neuralResult)
+
                 result += neuralResult.toList()
             }
 
