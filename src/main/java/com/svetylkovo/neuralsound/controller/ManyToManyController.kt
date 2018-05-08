@@ -4,24 +4,19 @@ import com.svetylkovo.neuralsound.extensions.fromNormalized
 import com.svetylkovo.neuralsound.extensions.toNormalized
 import com.svetylkovo.neuralsound.network.NeuralNetworkConfig
 import com.svetylkovo.neuralsound.wav.InputWav
-import com.svetylkovo.neuralsound.wav.WavPlayer
-import labbookpage.wav.WavFile
 import org.encog.engine.network.activation.ActivationSigmoid
 import org.encog.ml.data.basic.BasicMLDataSet
 import org.encog.neural.networks.BasicNetwork
 import org.encog.neural.networks.layers.BasicLayer
 import org.encog.neural.networks.training.propagation.resilient.ResilientPropagation
 import tornadofx.Controller
-import java.io.File
-import javax.sound.sampled.Clip
 
 
-class NeuralController : Controller() {
+class ManyToManyController : Controller() {
+
+    val wavOutputController by inject<WavOutputController>()
 
     var neuralNetwork: BasicNetwork? = null
-
-    val outputFileName = "out.wav"
-    var lastWavClip: Clip? = null
 
     fun learn() = runAsync {
 
@@ -107,34 +102,13 @@ class NeuralController : Controller() {
 
             println("Mapping to un-normalized form ...")
             val unNormalizedResult = result.map { it.fromNormalized() }
-            saveToWav(unNormalizedResult)
 
-            lastWavClip?.close()
-            lastWavClip = null
+            wavOutputController.saveToWav(unNormalizedResult)
+            wavOutputController.discardLastWavClip()
 
             result
         } ?: emptyList<Double>()
     }
 
-    fun saveToWav(output: List<Double>) {
-        println("Saving to wav file ...")
-        with(InputWav) {
-            WavFile.newWavFile(File(outputFileName), 1, output.size.toLong(), 16, sampleRate).also {
-                it.writeFrames(output.toDoubleArray(), output.size)
-                it.close()
-                println("Saved to $outputFileName")
-            }
-        }
-    }
 
-    fun play() = runAsync {
-
-        if (lastWavClip == null) {
-            lastWavClip = WavPlayer.getClip(File(outputFileName))
-        }
-
-        lastWavClip?.let {
-            WavPlayer.play(it)
-        }
-    }
 }

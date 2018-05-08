@@ -1,17 +1,18 @@
 package com.svetylkovo.neuralsound.view
 
-import com.svetylkovo.neuralsound.controller.NeuralController
+import com.svetylkovo.neuralsound.controller.WavOutputController
 import com.svetylkovo.neuralsound.exit
 import com.svetylkovo.neuralsound.extensions.fitXAxisTo
 import com.svetylkovo.neuralsound.extensions.useThinLine
 import com.svetylkovo.neuralsound.network.NeuralNetworkConfig
 import com.svetylkovo.neuralsound.wav.InputWav
 import javafx.scene.chart.NumberAxis
+import javafx.scene.control.TabPane
 import tornadofx.*
 
 class NeuralSoundView : View("Neural Sound") {
 
-    val neuralController by inject<NeuralController>()
+    val wavOutputController by inject<WavOutputController>()
 
     val inputSamples = mutableListOf<Double>().observable()
     val outputSamples = mutableListOf<Double>().observable()
@@ -22,9 +23,10 @@ class NeuralSoundView : View("Neural Sound") {
         shortcut("Esc") { exit() }
 
         paddingAll = 5.0
+        spacing = 2.0
 
         prefWidth = 1000.0
-        prefHeight = 800.0
+        prefHeight = 850.0
 
         hbox {
             spacing = 3.0
@@ -34,21 +36,8 @@ class NeuralSoundView : View("Neural Sound") {
                 inputSamples.setAll(InputWav.samples.toList())
             }
 
-            button("Learn/Generate/Play").action {
-                neuralController.learn() success {
-                    neuralController.generateWav() ui {
-                        outputSamples.setAll(it)
-                        neuralController.play()
-                    }
-                }
-            }
-
             button("Play WAV result").action {
-                neuralController.play()
-            }
-
-            button("Re-generate WAV").action {
-                neuralController.generateWav() ui { outputSamples.setAll(it) }
+                wavOutputController.play()
             }
 
             button("Play WAV Input").action {
@@ -56,38 +45,10 @@ class NeuralSoundView : View("Neural Sound") {
             }
         }
 
-        form {
-            fieldset("Neural network parameters:") {
-                flowpane {
-                    hgap = 5.0
-
-                    vbox {
-                        field("Input layer:") {
-                            textfield(NeuralNetworkConfig.inputLayerSizeProp)
-                        }
-                        field("Hidden layer:") {
-                            textfield(NeuralNetworkConfig.hiddenLayerSizeProp)
-                        }
-                        field("Max dataset size:") {
-                            textfield(NeuralNetworkConfig.maxDataSetSizeProp)
-                        }
-                        field("Output samples:") {
-                            textfield(NeuralNetworkConfig.outputSamplesCountProp)
-                        }
-                    }
-                    vbox {
-                        field("Max epochs:") {
-                            textfield(NeuralNetworkConfig.maxEpochsProp)
-                        }
-                        field("Max learn error:") {
-                            textfield(NeuralNetworkConfig.maxLearningErrorProp)
-                        }
-                        field("Learn step:") {
-                            textfield(NeuralNetworkConfig.maxLearnStepProp)
-                        }
-                    }
-                }
-            }
+        tabpane {
+            tabClosingPolicy = TabPane.TabClosingPolicy.UNAVAILABLE
+            tab("Many-to-many samples generator", find<ManyToManySamplesGeneratorView>().root)
+            tab("Sine based modulator", find<SineBasedModulatorView>().root)
         }
 
         linechart("Input", NumberAxis(), NumberAxis()) {

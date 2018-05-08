@@ -110,7 +110,6 @@ class NeuralNetworkTest {
             val dataSet = BasicMLDataSet(trainingMap.keys.toTypedArray(), trainingMap.values.toTypedArray())
 
             val train = ResilientPropagation(this, dataSet, 0.1, 0.0001)
-
             println("Learning ... (data size: ${dataSet.size()})")
 
             var epoch = 1
