@@ -45,6 +45,12 @@ class ManyToManyController : Controller() {
                     .take(maxDataSetSize)
                     .map {
                         it.first().toDoubleArray() to it.last().toDoubleArray()
+                    }.toMutableList()
+                    .also {
+                        //create a loop
+                        val firstInput = it.first().first
+                        val lastOutput = it.last().second
+                        it += lastOutput to firstInput
                     }.toMap()
 
                 val dataSet = BasicMLDataSet(trainingMap.keys.toTypedArray(), trainingMap.values.toTypedArray())
