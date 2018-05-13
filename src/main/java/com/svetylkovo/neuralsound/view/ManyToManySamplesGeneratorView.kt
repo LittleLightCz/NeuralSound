@@ -48,6 +48,11 @@ class ManyToManySamplesGeneratorView : View() {
                 }
 
                 hbox {
+                    paddingBottom = 5.0
+                    checkbox("Use loop", NeuralNetworkConfig.useLoopProp)
+                }
+
+                hbox {
                     spacing = 3.0
 
                     button("Learn/Generate/Play").action {

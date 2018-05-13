@@ -56,10 +56,11 @@ class ManyToManyController : Controller() {
                     .map { it.first() to it.last() }
                     .toMutableList()
                     .also {
-                        //create a loop
-                        val firstInput = it.first().first
-                        val lastOutput = it.last().second
-                        it += lastOutput to firstInput
+                        if (useLoop) {
+                            val firstInput = it.first().first
+                            val lastOutput = it.last().second
+                            it += lastOutput to firstInput
+                        }
                     }.toMap()
 
                 val dataSet = BasicMLDataSet(trainingMap.keys.toTypedArray(), trainingMap.values.toTypedArray())
