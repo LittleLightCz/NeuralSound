@@ -4,7 +4,6 @@ import com.svetylkovo.neuralsound.controller.WavOutputController
 import com.svetylkovo.neuralsound.exit
 import com.svetylkovo.neuralsound.extensions.fitXAxisTo
 import com.svetylkovo.neuralsound.extensions.useThinLine
-import com.svetylkovo.neuralsound.network.NeuralNetworkConfig
 import com.svetylkovo.neuralsound.wav.InputWav
 import javafx.scene.chart.NumberAxis
 import javafx.scene.control.TabPane
@@ -84,11 +83,6 @@ class NeuralSoundView : View("Neural Sound") {
                 fitXAxisTo(downsampledSize.toDouble())
             }
         }
-
-        checkbox(
-            "Use input samples as a kicker for the first neural output generation",
-            NeuralNetworkConfig.useInputSamplesAsKicker
-        )
     }
 
 }

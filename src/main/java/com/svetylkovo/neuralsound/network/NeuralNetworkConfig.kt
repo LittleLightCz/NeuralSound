@@ -1,13 +1,11 @@
 package com.svetylkovo.neuralsound.network
 
-import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.property.SimpleIntegerProperty
-import kotlin.math.roundToInt
 
 object NeuralNetworkConfig {
-    val inputLayerSizeProp = SimpleIntegerProperty(100)
-    val hiddenLayerSizeProp = SimpleIntegerProperty(100)
+    val inputLayerSizeProp = SimpleIntegerProperty(1024)
+    val hiddenLayerSizeProp = SimpleIntegerProperty(500)
 
     val maxEpochsProp = SimpleIntegerProperty(100)
     val maxDataSetSizeProp = SimpleIntegerProperty(100)
@@ -15,9 +13,7 @@ object NeuralNetworkConfig {
 
     val maxLearnStepProp = SimpleDoubleProperty(0.001)
 
-    val outputSamplesCountProp = SimpleIntegerProperty(8000)
-
-    val useInputSamplesAsKicker = SimpleBooleanProperty(false)
+    val outputSamplesCountProp = SimpleIntegerProperty(3000)
 
     //getters
     val inputLayerSize get() = inputLayerSizeProp.get()
@@ -29,8 +25,4 @@ object NeuralNetworkConfig {
     val maxLearnStep get() = this.maxLearnStepProp.get()
     val outputSamplesCount get() = outputSamplesCountProp.get()
 
-    fun setGoodDefaultsFor(inputSamplesSize: Int) {
-        inputLayerSizeProp.set((inputSamplesSize * 0.10).roundToInt())
-        maxDataSetSizeProp.set(500)
-    }
 }

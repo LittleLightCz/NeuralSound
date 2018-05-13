@@ -1,7 +1,5 @@
 package com.svetylkovo.neuralsound.controller
 
-import com.svetylkovo.neuralsound.extensions.fromNormalized
-import com.svetylkovo.neuralsound.extensions.toNormalized
 import com.svetylkovo.neuralsound.network.NeuralNetworkConfig
 import com.svetylkovo.neuralsound.wav.InputWav
 import org.encog.engine.network.activation.ActivationSigmoid
@@ -9,7 +7,9 @@ import org.encog.ml.data.basic.BasicMLDataSet
 import org.encog.neural.networks.BasicNetwork
 import org.encog.neural.networks.layers.BasicLayer
 import org.encog.neural.networks.training.propagation.resilient.ResilientPropagation
+import org.jtransforms.fft.DoubleFFT_1D
 import tornadofx.Controller
+import kotlin.math.abs
 
 
 class ManyToManyController : Controller() {
@@ -17,6 +17,8 @@ class ManyToManyController : Controller() {
     val wavOutputController by inject<WavOutputController>()
 
     var neuralNetwork: BasicNetwork? = null
+
+    private var normalizingMultiplier = 1.0
 
     fun learn() = runAsync {
 
@@ -37,15 +39,22 @@ class ManyToManyController : Controller() {
 
                 val inputSize = inputLayerSize
 
+                val fft = DoubleFFT_1D(inputSize.toLong())
+
                 val trainingMap = InputWav.samples
                     .asSequence()
-                    .map { it.toNormalized() }
                     .windowed(inputSize, inputSize)
+                    .map { it.toDoubleArray() }
+                    .onEach { fft.realForward(it) }
+                    .toList()
+                    .also {
+                        setMultiplier(it)
+                        it.forEach(::normalize)
+                    }
                     .windowed(2, 1)
                     .take(maxDataSetSize)
-                    .map {
-                        it.first().toDoubleArray() to it.last().toDoubleArray()
-                    }.toMutableList()
+                    .map { it.first() to it.last() }
+                    .toMutableList()
                     .also {
                         //create a loop
                         val firstInput = it.first().first
@@ -86,35 +95,59 @@ class ManyToManyController : Controller() {
 
         println("Generating WAV")
 
+
         neuralNetwork?.run {
 
             val inputSize = NeuralNetworkConfig.inputLayerSize
             val outputSize = inputSize
 
-            val result = when(NeuralNetworkConfig.useInputSamplesAsKicker.get()) {
-                true -> InputWav.samples.take(inputSize).map { it.toNormalized() }.toMutableList()
-                else -> List(inputSize) { 0.5 }.toMutableList()
-            }
+            val fft = DoubleFFT_1D(inputSize.toLong())
+
+//            var lastSpectrumResult = DoubleArray(inputSize) { 0.0 }
+            var lastSpectrumResult = InputWav.samples.take(inputSize).toDoubleArray()
+            fft.realForward(lastSpectrumResult)
+            normalize(lastSpectrumResult)
 
             val neuralResult = DoubleArray(outputSize)
 
+            val unNormalizedSignalResult = ArrayList<Double>()
+
             repeat(NeuralNetworkConfig.outputSamplesCount / inputSize + 1) {
-                val neuralInput = result.takeLast(inputSize)
+                compute(lastSpectrumResult, neuralResult)
+                lastSpectrumResult = neuralResult.copyOf()
 
-                compute(neuralInput.toDoubleArray(), neuralResult)
-
-                result += neuralResult.toList()
+                unNormalize(neuralResult)
+                fft.realInverse(neuralResult, true)
+                unNormalizedSignalResult.addAll(neuralResult.toTypedArray())
             }
 
-            println("Mapping to un-normalized form ...")
-            val unNormalizedResult = result.map { it.fromNormalized() }
-
-            wavOutputController.saveToWav(unNormalizedResult)
+            wavOutputController.saveToWav(unNormalizedSignalResult.toDoubleArray())
             wavOutputController.discardLastWavClip()
 
-            result
+            unNormalizedSignalResult
         } ?: emptyList<Double>()
     }
 
+    private fun setMultiplier(samples: List<DoubleArray>) {
+        val maxAbs = samples.asSequence()
+            .flatMap { it.asSequence() }
+            .maxBy { abs(it) } ?: 1.0
+
+        normalizingMultiplier = 0.5 / maxAbs
+    }
+
+    private fun normalize(samples: DoubleArray) {
+        for (index in samples.indices) {
+            samples[index] *= normalizingMultiplier
+            samples[index] += 0.5
+        }
+    }
+
+    private fun unNormalize(samples: DoubleArray) {
+        for (index in samples.indices) {
+            samples[index] -= 0.5
+            samples[index] /= normalizingMultiplier
+        }
+    }
 
 }

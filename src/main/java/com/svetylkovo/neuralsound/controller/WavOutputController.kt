@@ -14,11 +14,11 @@ class WavOutputController: Controller() {
 
     var lastWavClip: Clip? = null
 
-    fun saveToWav(output: List<Double>) {
+    fun saveToWav(output: DoubleArray) {
         println("Saving to wav file ...")
         with(InputWav) {
             WavFile.newWavFile(File(outputFileName), 1, output.size.toLong(), 16, sampleRate).also {
-                it.writeFrames(output.toDoubleArray(), output.size)
+                it.writeFrames(output, output.size)
                 it.close()
                 println("Saved to $outputFileName")
             }

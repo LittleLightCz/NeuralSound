@@ -1,6 +1,5 @@
 package com.svetylkovo.neuralsound.wav
 
-import com.svetylkovo.neuralsound.network.NeuralNetworkConfig
 import javafx.stage.FileChooser
 import javafx.stage.Stage
 import labbookpage.wav.WavFile
@@ -24,26 +23,27 @@ object InputWav {
         FileChooser().apply {
             initialDirectory = lastDirectory
         }.showOpenDialog(Stage())?.let {
-
-            val wavFile = WavFile.openWavFile(it)
-
-            numChannels = wavFile.numChannels
-            numFrames = wavFile.numFrames
-            validBits = wavFile.validBits
-            sampleRate = wavFile.sampleRate
-
-            samples = DoubleArray(numChannels * numFrames.toInt())
-            wavFile.readFrames(samples, samples.size)
-
-            if (numChannels == 2) {
-                samples = samples.filterIndexed { index, _ -> index % 2 == 0 }.toDoubleArray()
-            }
-
-            lastWavFile = it
-            lastDirectory = it.parentFile
-
-            NeuralNetworkConfig.setGoodDefaultsFor(samples.size)
+            load(it)
         }
+    }
+
+    fun load(file: File) {
+        val wavFile = WavFile.openWavFile(file)
+
+        numChannels = wavFile.numChannels
+        numFrames = wavFile.numFrames
+        validBits = wavFile.validBits
+        sampleRate = wavFile.sampleRate
+
+        samples = DoubleArray(numChannels * numFrames.toInt())
+        wavFile.readFrames(samples, samples.size)
+
+        if (numChannels == 2) {
+            samples = samples.filterIndexed { index, _ -> index % 2 == 0 }.toDoubleArray()
+        }
+
+        lastWavFile = file
+        lastDirectory = file.parentFile
     }
 
     fun play() {
